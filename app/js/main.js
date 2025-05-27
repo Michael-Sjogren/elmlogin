@@ -5224,8 +5224,10 @@ var $author$project$Pages$Dashboard$Model = F2(
 		return {password: password, username: username};
 	});
 var $author$project$Pages$Dashboard$initModel = A2($author$project$Pages$Dashboard$Model, '', '');
+var $author$project$Signal$None = {$: 'None'};
+var $author$project$Signal$none = $author$project$Signal$None;
 var $author$project$Pages$Dashboard$init = function (ctx) {
-	return _Utils_Tuple2($author$project$Pages$Dashboard$initModel, $elm$core$Platform$Cmd$none);
+	return _Utils_Tuple2($author$project$Pages$Dashboard$initModel, $author$project$Signal$none);
 };
 var $author$project$Pages$Login$Model = F2(
 	function (username, password) {
@@ -5233,19 +5235,92 @@ var $author$project$Pages$Login$Model = F2(
 	});
 var $author$project$Pages$Login$initModel = A2($author$project$Pages$Login$Model, '', '');
 var $author$project$Pages$Login$init = function (ctx) {
-	return _Utils_Tuple2($author$project$Pages$Login$initModel, $elm$core$Platform$Cmd$none);
+	return _Utils_Tuple2($author$project$Pages$Login$initModel, $author$project$Signal$none);
 };
 var $author$project$Pages$NotFound$init = function (_v0) {
-	return _Utils_Tuple2($author$project$Pages$NotFound$initModel, $elm$core$Platform$Cmd$none);
+	return _Utils_Tuple2($author$project$Pages$NotFound$initModel, $author$project$Signal$none);
 };
-var $elm$core$Platform$Cmd$map = _Platform_map;
+var $author$project$Signal$Batch = function (a) {
+	return {$: 'Batch', a: a};
+};
+var $author$project$Signal$PushRoute = function (a) {
+	return {$: 'PushRoute', a: a};
+};
+var $author$project$Signal$map = F2(
+	function (toMsg, effect) {
+		switch (effect.$) {
+			case 'None':
+				return $author$project$Signal$None;
+			case 'Batch':
+				var signals = effect.a;
+				return $author$project$Signal$Batch(
+					A2(
+						$elm$core$List$map,
+						$author$project$Signal$map(toMsg),
+						signals));
+			default:
+				var route = effect.a;
+				return $author$project$Signal$PushRoute(route);
+		}
+	});
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $elm$browser$Browser$Navigation$replaceUrl = _Browser_replaceUrl;
+var $author$project$Route$toString = function (r) {
+	switch (r.$) {
+		case 'LoginRoute':
+			return '/login';
+		case 'DashboardRoute':
+			return '/home';
+		default:
+			return '/';
+	}
+};
+var $author$project$Main$signalToCmd = F2(
+	function (model, signal) {
+		switch (signal.$) {
+			case 'None':
+				return $elm$core$Platform$Cmd$none;
+			case 'Batch':
+				var signals = signal.a;
+				return $elm$core$Platform$Cmd$batch(
+					A2(
+						$elm$core$List$map,
+						$author$project$Main$signalToCmd(model),
+						signals));
+			default:
+				var route = signal.a;
+				return A2(
+					$elm$browser$Browser$Navigation$pushUrl,
+					model.ctx.key,
+					$author$project$Route$toString(route));
+		}
+	});
+var $author$project$Pages$Dashboard$update = F3(
+	function (ctx, msg, model) {
+		if (msg.$ === 'Login') {
+			return _Utils_Tuple2(model, $author$project$Signal$none);
+		} else {
+			return _Utils_Tuple2(model, $author$project$Signal$none);
+		}
+	});
+var $author$project$Pages$Login$update = F3(
+	function (ctx, msg, model) {
+		if (msg.$ === 'Login') {
+			return _Utils_Tuple2(model, $author$project$Signal$none);
+		} else {
+			return _Utils_Tuple2(model, $author$project$Signal$none);
+		}
+	});
+var $author$project$Pages$NotFound$update = F3(
+	function (_v0, msg, model) {
+		return _Utils_Tuple2(model, $author$project$Signal$none);
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		switch (msg.$) {
+		var _v0 = _Utils_Tuple2(msg, model.pageModel);
+		switch (_v0.a.$) {
 			case 'OnUrlChanged':
-				var url = msg.a;
+				var url = _v0.a.a;
 				var _v1 = $author$project$Route$fromString(url.path);
 				switch (_v1.$) {
 					case 'NotFoundRoute':
@@ -5258,7 +5333,10 @@ var $author$project$Main$update = F2(
 								{
 									pageModel: $author$project$Main$NotFound(pModel)
 								}),
-							A2($elm$core$Platform$Cmd$map, $author$project$Main$NotFoundMsg, cmd));
+							A2(
+								$author$project$Main$signalToCmd,
+								model,
+								A2($author$project$Signal$map, $author$project$Main$NotFoundMsg, cmd)));
 					case 'DashboardRoute':
 						var _v3 = $author$project$Pages$Dashboard$init(model.ctx);
 						var pModel = _v3.a;
@@ -5269,7 +5347,10 @@ var $author$project$Main$update = F2(
 								{
 									pageModel: $author$project$Main$Dashboard(pModel)
 								}),
-							A2($elm$core$Platform$Cmd$map, $author$project$Main$DashboardMsg, cmd));
+							A2(
+								$author$project$Main$signalToCmd,
+								model,
+								A2($author$project$Signal$map, $author$project$Main$DashboardMsg, cmd)));
 					default:
 						var _v4 = $author$project$Pages$Login$init(model.ctx);
 						var pModel = _v4.a;
@@ -5280,10 +5361,13 @@ var $author$project$Main$update = F2(
 								{
 									pageModel: $author$project$Main$Login(pModel)
 								}),
-							A2($elm$core$Platform$Cmd$map, $author$project$Main$LoginMsg, cmd));
+							A2(
+								$author$project$Main$signalToCmd,
+								model,
+								A2($author$project$Signal$map, $author$project$Main$LoginMsg, cmd)));
 				}
 			case 'OnUrlRequested':
-				var req = msg.a;
+				var req = _v0.a.a;
 				if (req.$ === 'Internal') {
 					var url = req.a;
 					var ctx = A4($author$project$Context$Context, model.ctx.key, url, model.ctx.flags, model.ctx.user);
@@ -5298,8 +5382,69 @@ var $author$project$Main$update = F2(
 						model,
 						A2($elm$browser$Browser$Navigation$replaceUrl, model.ctx.key, url));
 				}
+			case 'LoginMsg':
+				if (_v0.b.$ === 'Login') {
+					var m = _v0.a.a;
+					var pageModel = _v0.b.a;
+					var _v6 = A3($author$project$Pages$Login$update, model.ctx, m, pageModel);
+					var lmodel = _v6.a;
+					var signal = _v6.b;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								pageModel: $author$project$Main$Login(lmodel)
+							}),
+						A2(
+							$author$project$Main$signalToCmd,
+							model,
+							A2($author$project$Signal$map, $author$project$Main$LoginMsg, signal)));
+				} else {
+					var m = _v0.a.a;
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 'NotFoundMsg':
+				if (_v0.b.$ === 'NotFound') {
+					var m = _v0.a.a;
+					var pageModel = _v0.b.a;
+					var _v7 = A3($author$project$Pages$NotFound$update, model.ctx, m, pageModel);
+					var lmodel = _v7.a;
+					var signal = _v7.b;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								pageModel: $author$project$Main$NotFound(lmodel)
+							}),
+						A2(
+							$author$project$Main$signalToCmd,
+							model,
+							A2($author$project$Signal$map, $author$project$Main$NotFoundMsg, signal)));
+				} else {
+					var m = _v0.a.a;
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				if (_v0.b.$ === 'Dashboard') {
+					var m = _v0.a.a;
+					var pageModel = _v0.b.a;
+					var _v8 = A3($author$project$Pages$Dashboard$update, model.ctx, m, pageModel);
+					var lmodel = _v8.a;
+					var signal = _v8.b;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								pageModel: $author$project$Main$Dashboard(pageModel)
+							}),
+						A2(
+							$author$project$Main$signalToCmd,
+							model,
+							A2($author$project$Signal$map, $author$project$Main$DashboardMsg, signal)));
+				} else {
+					var m = _v0.a.a;
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
@@ -5325,16 +5470,6 @@ var $elm$html$Html$Attributes$href = function (url) {
 };
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
-var $author$project$Route$toString = function (r) {
-	switch (r.$) {
-		case 'LoginRoute':
-			return '/login';
-		case 'DashboardRoute':
-			return '/home';
-		default:
-			return '/';
-	}
-};
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Components$viewHeader = A2(
 	$elm$html$Html$header,

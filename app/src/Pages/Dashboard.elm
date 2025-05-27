@@ -1,8 +1,9 @@
-module Pages.Dashboard exposing (..)
+module Pages.Dashboard exposing (Model,initModel,init,update, view, Msg)
 import Components as Comps
 import Html
 import Browser
 import Context as Ctx
+import Signal exposing(Signal)
 type Msg = 
     Login
     | LoginResponse
@@ -11,19 +12,20 @@ type alias Model =
     { username : String
     , password : String
     }
+initModel : Model
 initModel = Model "" ""
-init : Ctx.Context -> (Model , Cmd Msg)
+init : Ctx.Context -> (Model , Signal Msg)
 init ctx =
-    (initModel , Cmd.none)
+    (initModel , Signal.none)
 
-update : Ctx.Context -> Msg -> Model ->  ( Model, Cmd Msg )
+update : Ctx.Context -> Msg -> Model ->  ( Model, Signal Msg )
 update ctx msg model =
     case msg of
         Login ->
-             ( model, Cmd.none )
+             ( model, Signal.none )
 
         LoginResponse ->
-             ( model, Cmd.none )
+             ( model, Signal.none )
 
 view : Ctx.Context -> Model -> Browser.Document Msg
 view ctx model =

@@ -1,24 +1,25 @@
-module Pages.NotFound exposing (..)
+module Pages.NotFound exposing (init,initModel,update,view, Model, Msg)
 
 import Components as Comps
 import Html
 import Browser
 import Context as Ctx
+import Signal exposing(Signal)
 type Msg = 
     DoNothing
 
 type alias Model = ()
 initModel : ()
 initModel = ()
-init : Ctx.Context -> (Model , Cmd Msg)
+init : Ctx.Context -> (Model , Signal Msg)
 init _ =
-    (initModel , Cmd.none)
+    (initModel , Signal.none)
 
-update : Ctx.Context -> Msg -> Model ->  ( Model, Cmd Msg )
+update : Ctx.Context -> Msg -> Model ->  ( Model, Signal Msg )
 update _ msg model =
     case msg of
         DoNothing ->
-             ( model, Cmd.none )
+             ( model, Signal.none )
 
 view : Ctx.Context -> Model -> Browser.Document Msg
 view _ _ =

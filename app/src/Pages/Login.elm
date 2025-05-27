@@ -1,8 +1,9 @@
-module Pages.Login exposing (..)
+module Pages.Login exposing (Model,Msg,init,initModel,update,view)
 import Html
 import Browser
 import Context as Ctx
 import Components as Comp
+import Signal exposing(Signal)
 type Msg =
     Login
     | LoginResponse
@@ -15,18 +16,18 @@ type alias Model =
 initModel : Model
 initModel = Model "" ""
 
-init : Ctx.Context -> (Model , Cmd Msg)
+init : Ctx.Context -> (Model , Signal Msg)
 init ctx =
-    (initModel , Cmd.none)
+    (initModel , Signal.none)
 
-update : Ctx.Context -> Msg -> Model ->  ( Model, Cmd Msg )
+update : Ctx.Context -> Msg -> Model ->  ( Model, Signal Msg )
 update ctx msg model =
     case msg of
         Login ->
-             ( model, Cmd.none )
+             ( model, Signal.none )
 
         LoginResponse ->
-             ( model, Cmd.none )
+             ( model, Signal.none )
 
 view : Ctx.Context -> Model -> Browser.Document Msg
 view ctx model =
