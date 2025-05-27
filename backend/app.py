@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory,request, session, Response
+from flask import Flask, send_from_directory,request, session, Response, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from http import HTTPStatus
 ADMIN_USER = 'admin'
@@ -36,9 +36,10 @@ def create_app():
         
         if username == ADMIN_USER and check_password_hash(ADMIN_PW_HASH,password):
             session['username'] = username
-            return
-            
-        return Response(status=HTTPStatus.UNAUTHORIZED)
+            return jsonify({'success':True, 'response': 'Login success'})
+        else:
+            return jsonify({'success':False, 'response': 'Invalid credentails'}), 
+        
 
     def logout():
         if session.get('username'):

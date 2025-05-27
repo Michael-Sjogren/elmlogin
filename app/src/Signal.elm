@@ -5,7 +5,7 @@ type Signal msg
     = None
     | Batch (List (Signal msg))
     | PushRoute Route
-
+    | Login { username : String , password : String}
 
 none : Signal msg
 none = None
@@ -25,3 +25,4 @@ map toMsg effect =
         None -> None
         Batch signals -> Batch <| List.map (map toMsg) signals
         PushRoute route -> PushRoute route
+        Login data -> Login data

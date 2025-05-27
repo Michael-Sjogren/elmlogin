@@ -34,9 +34,6 @@ view ctx model =
             Comps.viewHeader
             ,Html.div []
             [Html.text "Dashboard page"]
-            , Html.div [] [
-
-            ]    
         ],
         title = "Dashboard page"
     }

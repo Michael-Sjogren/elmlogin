@@ -11,6 +11,32 @@ import Route
 import Url
 import Signal exposing (Signal(..))
 import Task
+import Http
+import Json.Encode as JEncode
+import Json.Decode as JDecode
+import Route exposing (Route)
+
+
+type alias LoginResponseData = 
+    {
+        success : Bool,
+        response : String
+    }
+
+encodeLoginRequest : {username: String , password: String} -> JEncode.Value
+encodeLoginRequest data =
+    JEncode.object
+        [
+            ("username", JEncode.string data.username )
+            ,("password", JEncode.string data.password )
+        ]
+
+loginResponseDecoder : JDecode.Decoder LoginResponseData
+loginResponseDecoder =
+    JDecode.map2 LoginResponseData
+        ( JDecode.field "success" JDecode.bool)
+        ( JDecode.field "response" JDecode.string)
+
 
 
 type alias Model =
@@ -31,7 +57,8 @@ type Msg
     | NotFoundMsg Pages.NotFound.Msg
     | DashboardMsg Pages.Dashboard.Msg
     | LoginMsg Pages.Login.Msg
-
+    | LoginResponse (Result Http.Error LoginResponseData)
+ 
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -97,22 +124,32 @@ update msg model =
                 (lmodel, signal ) = Pages.Login.update model.ctx m pageModel
             in
             ({model | pageModel = Login lmodel}  , Signal.map LoginMsg signal |> signalToCmd model)
-        (LoginMsg m , _) ->
+        (LoginMsg _ , _) ->
             (model, Cmd.none)
         (NotFoundMsg m, NotFound pageModel ) ->
             let
                 ( lmodel, signal ) = Pages.NotFound.update model.ctx m pageModel
             in
             ({model | pageModel = (NotFound lmodel)}  , Signal.map NotFoundMsg signal |> signalToCmd model)
-        (NotFoundMsg m , _) ->
+        (NotFoundMsg _ , _) ->
             (model, Cmd.none)
         (DashboardMsg m , Dashboard pageModel ) ->
             let
                 (lmodel, signal ) = Pages.Dashboard.update model.ctx m  pageModel
             in
-            ({model | pageModel = (Dashboard pageModel)}, Signal.map DashboardMsg signal |> signalToCmd model)
+            ({model | pageModel = (Dashboard lmodel)}, Signal.map DashboardMsg signal |> signalToCmd model)
         (DashboardMsg m , _) ->
             (model, Cmd.none)
+        (LoginResponse result, _) ->
+            case result of
+                Result.Ok response ->
+                    if response.success then
+                        (model, Nav.pushUrl model.ctx.key (Route.toString Route.DashboardRoute))
+                    else
+                        (model, Cmd.none)
+                Result.Err err ->
+                    (model, Cmd.none)
+
 
 view : Model -> Browser.Document Msg
 view model =
@@ -153,6 +190,11 @@ signalToCmd model signal =
         Signal.None -> Cmd.none
         Signal.Batch signals -> Cmd.batch (List.map (signalToCmd model) signals)
         Signal.PushRoute route -> Nav.pushUrl model.ctx.key (Route.toString route)
+        Signal.Login data -> Http.post {
+            url = "/auth/login",
+            body = Http.jsonBody (encodeLoginRequest data),
+            expect = Http.expectJson LoginResponse loginResponseDecoder
+            }
 
 
 sendMsg : Msg -> Cmd Msg
