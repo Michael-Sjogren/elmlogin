@@ -36,9 +36,9 @@ def create_app():
         
         if username == ADMIN_USER and check_password_hash(ADMIN_PW_HASH,password):
             session['username'] = username
-            return jsonify({'success':True, 'response': 'Login success'})
+            return jsonify({'success':True, 'response': 'Login success'}), HTTPStatus.OK
         else:
-            return jsonify({'success':False, 'response': 'Invalid credentails'}), 
+            return jsonify({'statusCode':HTTPStatus.UNAUTHORIZED.value, 'errorMessage': 'Invalid credentails'}) , HTTPStatus.UNAUTHORIZED
         
 
     def logout():

@@ -1,25 +1,25 @@
-module Signal exposing (..)
+module Effect exposing (..)
 import Route exposing (Route)
 
-type Signal msg 
+type Effect msg 
     = None
-    | Batch (List (Signal msg))
+    | Batch (List (Effect msg))
     | PushRoute Route
     | Login { username : String , password : String}
 
-none : Signal msg
+none : Effect msg
 none = None
 
-batch : List (Signal msg) -> Signal msg
+batch : List (Effect msg) -> Effect msg
 batch list = Batch list
 
 
-pushRoute : Route -> Signal msg
+pushRoute : Route -> Effect msg
 pushRoute route =
     PushRoute route
 
 
-map : ( msg1 -> msg2 ) -> Signal msg1 -> Signal msg2
+map : ( msg1 -> msg2 ) -> Effect msg1 -> Effect msg2
 map toMsg effect =
     case effect of
         None -> None

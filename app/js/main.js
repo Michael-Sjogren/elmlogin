@@ -10739,22 +10739,27 @@ var $author$project$Context$Context = F4(
 	function (key, url, flags, user) {
 		return {flags: flags, key: key, url: url, user: user};
 	});
-var $author$project$Main$Model = F2(
-	function (ctx, pageModel) {
-		return {ctx: ctx, pageModel: pageModel};
-	});
-var $author$project$Main$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
+var $author$project$Main$Login = function (a) {
+	return {$: 'Login', a: a};
 };
-var $author$project$Pages$NotFound$initModel = _Utils_Tuple0;
+var $author$project$Main$Model = F3(
+	function (ctx, pageModel, errorMsg) {
+		return {ctx: ctx, errorMsg: errorMsg, pageModel: pageModel};
+	});
+var $author$project$Pages$Login$Model = F2(
+	function (username, password) {
+		return {password: password, username: username};
+	});
+var $author$project$Pages$Login$initModel = A2($author$project$Pages$Login$Model, '', '');
 var $author$project$Main$init = F3(
 	function (flags, url, key) {
 		var ctx = A4($author$project$Context$Context, key, url, flags, $elm$core$Maybe$Nothing);
 		return _Utils_Tuple2(
-			A2(
+			A3(
 				$author$project$Main$Model,
 				ctx,
-				$author$project$Main$NotFound($author$project$Pages$NotFound$initModel)),
+				$author$project$Main$Login($author$project$Pages$Login$initModel),
+				$elm$core$Maybe$Nothing),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -10766,11 +10771,11 @@ var $author$project$Main$DashboardMsg = function (a) {
 	return {$: 'DashboardMsg', a: a};
 };
 var $author$project$Route$DashboardRoute = {$: 'DashboardRoute'};
-var $author$project$Main$Login = function (a) {
-	return {$: 'Login', a: a};
-};
 var $author$project$Main$LoginMsg = function (a) {
 	return {$: 'LoginMsg', a: a};
+};
+var $author$project$Main$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
 };
 var $author$project$Main$NotFoundMsg = function (a) {
 	return {$: 'NotFoundMsg', a: a};
@@ -10792,49 +10797,45 @@ var $author$project$Pages$Dashboard$Model = F2(
 		return {password: password, username: username};
 	});
 var $author$project$Pages$Dashboard$initModel = A2($author$project$Pages$Dashboard$Model, '', '');
-var $author$project$Signal$None = {$: 'None'};
-var $author$project$Signal$none = $author$project$Signal$None;
+var $author$project$Effect$None = {$: 'None'};
+var $author$project$Effect$none = $author$project$Effect$None;
 var $author$project$Pages$Dashboard$init = function (ctx) {
-	return _Utils_Tuple2($author$project$Pages$Dashboard$initModel, $author$project$Signal$none);
+	return _Utils_Tuple2($author$project$Pages$Dashboard$initModel, $author$project$Effect$none);
 };
-var $author$project$Pages$Login$Model = F2(
-	function (username, password) {
-		return {password: password, username: username};
-	});
-var $author$project$Pages$Login$initModel = A2($author$project$Pages$Login$Model, '', '');
 var $author$project$Pages$Login$init = function (ctx) {
-	return _Utils_Tuple2($author$project$Pages$Login$initModel, $author$project$Signal$none);
+	return _Utils_Tuple2($author$project$Pages$Login$initModel, $author$project$Effect$none);
 };
+var $author$project$Pages$NotFound$initModel = _Utils_Tuple0;
 var $author$project$Pages$NotFound$init = function (_v0) {
-	return _Utils_Tuple2($author$project$Pages$NotFound$initModel, $author$project$Signal$none);
+	return _Utils_Tuple2($author$project$Pages$NotFound$initModel, $author$project$Effect$none);
 };
-var $author$project$Signal$Batch = function (a) {
+var $author$project$Effect$Batch = function (a) {
 	return {$: 'Batch', a: a};
 };
-var $author$project$Signal$Login = function (a) {
+var $author$project$Effect$Login = function (a) {
 	return {$: 'Login', a: a};
 };
-var $author$project$Signal$PushRoute = function (a) {
+var $author$project$Effect$PushRoute = function (a) {
 	return {$: 'PushRoute', a: a};
 };
-var $author$project$Signal$map = F2(
+var $author$project$Effect$map = F2(
 	function (toMsg, effect) {
 		switch (effect.$) {
 			case 'None':
-				return $author$project$Signal$None;
+				return $author$project$Effect$None;
 			case 'Batch':
 				var signals = effect.a;
-				return $author$project$Signal$Batch(
+				return $author$project$Effect$Batch(
 					A2(
 						$elm$core$List$map,
-						$author$project$Signal$map(toMsg),
+						$author$project$Effect$map(toMsg),
 						signals));
 			case 'PushRoute':
 				var route = effect.a;
-				return $author$project$Signal$PushRoute(route);
+				return $author$project$Effect$PushRoute(route);
 			default:
 				var data = effect.a;
-				return $author$project$Signal$Login(data);
+				return $author$project$Effect$Login(data);
 		}
 	});
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
@@ -10854,6 +10855,21 @@ var $author$project$Main$encodeLoginRequest = function (data) {
 				$elm$json$Json$Encode$string(data.password))
 			]));
 };
+var $author$project$Main$BadStatus = function (a) {
+	return {$: 'BadStatus', a: a};
+};
+var $author$project$Main$UnAuthorized = function (a) {
+	return {$: 'UnAuthorized', a: a};
+};
+var $author$project$Main$ErrorResponse = F2(
+	function (statusCode, errorMessage) {
+		return {errorMessage: errorMessage, statusCode: statusCode};
+	});
+var $author$project$Main$decodeErrorResponse = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Main$ErrorResponse,
+	A2($elm$json$Json$Decode$field, 'statusCode', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'errorMessage', $elm$json$Json$Decode$string));
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -10889,63 +10905,56 @@ var $elm$http$Http$expectStringResponse = F2(
 			$elm$core$Basics$identity,
 			A2($elm$core$Basics$composeR, toResult, toMsg));
 	});
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
-var $elm$http$Http$BadBody = function (a) {
-	return {$: 'BadBody', a: a};
-};
-var $elm$http$Http$BadStatus = function (a) {
-	return {$: 'BadStatus', a: a};
-};
-var $elm$http$Http$BadUrl = function (a) {
-	return {$: 'BadUrl', a: a};
-};
-var $elm$http$Http$NetworkError = {$: 'NetworkError'};
-var $elm$http$Http$Timeout = {$: 'Timeout'};
-var $elm$http$Http$resolve = F2(
-	function (toResult, response) {
-		switch (response.$) {
-			case 'BadUrl_':
-				var url = response.a;
-				return $elm$core$Result$Err(
-					$elm$http$Http$BadUrl(url));
-			case 'Timeout_':
-				return $elm$core$Result$Err($elm$http$Http$Timeout);
-			case 'NetworkError_':
-				return $elm$core$Result$Err($elm$http$Http$NetworkError);
-			case 'BadStatus_':
-				var metadata = response.a;
-				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.statusCode));
-			default:
-				var body = response.b;
-				return A2(
-					$elm$core$Result$mapError,
-					$elm$http$Http$BadBody,
-					toResult(body));
-		}
-	});
-var $elm$http$Http$expectJson = F2(
+var $author$project$Main$expectJson = F2(
 	function (toMsg, decoder) {
 		return A2(
 			$elm$http$Http$expectStringResponse,
 			toMsg,
-			$elm$http$Http$resolve(
-				function (string) {
-					return A2(
-						$elm$core$Result$mapError,
-						$elm$json$Json$Decode$errorToString,
-						A2($elm$json$Json$Decode$decodeString, decoder, string));
-				}));
+			function (response) {
+				switch (response.$) {
+					case 'BadUrl_':
+						var url = response.a;
+						return $elm$core$Result$Err(
+							$author$project$Main$BadStatus($elm$core$Maybe$Nothing));
+					case 'Timeout_':
+						return $elm$core$Result$Err(
+							$author$project$Main$BadStatus($elm$core$Maybe$Nothing));
+					case 'NetworkError_':
+						return $elm$core$Result$Err(
+							$author$project$Main$BadStatus($elm$core$Maybe$Nothing));
+					case 'BadStatus_':
+						var metadata = response.a;
+						var body = response.b;
+						var _v1 = metadata.statusCode;
+						if (_v1 === 401) {
+							var _v2 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$decodeErrorResponse, body);
+							if (_v2.$ === 'Ok') {
+								var res = _v2.a;
+								return $elm$core$Result$Err(
+									$author$project$Main$UnAuthorized(
+										$elm$core$Maybe$Just(res)));
+							} else {
+								return $elm$core$Result$Err(
+									$author$project$Main$UnAuthorized($elm$core$Maybe$Nothing));
+							}
+						} else {
+							return $elm$core$Result$Err(
+								$author$project$Main$BadStatus($elm$core$Maybe$Nothing));
+						}
+					default:
+						var metadata = response.a;
+						var body = response.b;
+						var _v3 = A2($elm$json$Json$Decode$decodeString, decoder, body);
+						if (_v3.$ === 'Ok') {
+							var value = _v3.a;
+							return $elm$core$Result$Ok(value);
+						} else {
+							var err = _v3.a;
+							return $elm$core$Result$Err(
+								$author$project$Main$BadStatus($elm$core$Maybe$Nothing));
+						}
+				}
+			});
 	});
 var $elm$http$Http$jsonBody = function (value) {
 	return A2(
@@ -11151,7 +11160,7 @@ var $author$project$Main$signalToCmd = F2(
 					{
 						body: $elm$http$Http$jsonBody(
 							$author$project$Main$encodeLoginRequest(data)),
-						expect: A2($elm$http$Http$expectJson, $author$project$Main$LoginResponse, $author$project$Main$loginResponseDecoder),
+						expect: A2($author$project$Main$expectJson, $author$project$Main$LoginResponse, $author$project$Main$loginResponseDecoder),
 						url: '/auth/login'
 					});
 		}
@@ -11159,13 +11168,13 @@ var $author$project$Main$signalToCmd = F2(
 var $author$project$Pages$Dashboard$update = F3(
 	function (ctx, msg, model) {
 		if (msg.$ === 'Login') {
-			return _Utils_Tuple2(model, $author$project$Signal$none);
+			return _Utils_Tuple2(model, $author$project$Effect$none);
 		} else {
-			return _Utils_Tuple2(model, $author$project$Signal$none);
+			return _Utils_Tuple2(model, $author$project$Effect$none);
 		}
 	});
 var $author$project$Pages$Login$postLogin = function (data) {
-	return $author$project$Signal$Login(data);
+	return $author$project$Effect$Login(data);
 };
 var $author$project$Pages$Login$update = F3(
 	function (ctx, msg, model) {
@@ -11181,19 +11190,19 @@ var $author$project$Pages$Login$update = F3(
 					_Utils_update(
 						model,
 						{password: password}),
-					$author$project$Signal$none);
+					$author$project$Effect$none);
 			default:
 				var username = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{username: username}),
-					$author$project$Signal$none);
+					$author$project$Effect$none);
 		}
 	});
 var $author$project$Pages$NotFound$update = F3(
 	function (_v0, msg, model) {
-		return _Utils_Tuple2(model, $author$project$Signal$none);
+		return _Utils_Tuple2(model, $author$project$Effect$none);
 	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -11216,7 +11225,7 @@ var $author$project$Main$update = F2(
 							A2(
 								$author$project$Main$signalToCmd,
 								model,
-								A2($author$project$Signal$map, $author$project$Main$NotFoundMsg, cmd)));
+								A2($author$project$Effect$map, $author$project$Main$NotFoundMsg, cmd)));
 					case 'DashboardRoute':
 						var _v3 = $author$project$Pages$Dashboard$init(model.ctx);
 						var pModel = _v3.a;
@@ -11230,7 +11239,7 @@ var $author$project$Main$update = F2(
 							A2(
 								$author$project$Main$signalToCmd,
 								model,
-								A2($author$project$Signal$map, $author$project$Main$DashboardMsg, cmd)));
+								A2($author$project$Effect$map, $author$project$Main$DashboardMsg, cmd)));
 					default:
 						var _v4 = $author$project$Pages$Login$init(model.ctx);
 						var pModel = _v4.a;
@@ -11244,7 +11253,7 @@ var $author$project$Main$update = F2(
 							A2(
 								$author$project$Main$signalToCmd,
 								model,
-								A2($author$project$Signal$map, $author$project$Main$LoginMsg, cmd)));
+								A2($author$project$Effect$map, $author$project$Main$LoginMsg, cmd)));
 				}
 			case 'OnUrlRequested':
 				var req = _v0.a.a;
@@ -11278,7 +11287,7 @@ var $author$project$Main$update = F2(
 						A2(
 							$author$project$Main$signalToCmd,
 							model,
-							A2($author$project$Signal$map, $author$project$Main$LoginMsg, signal)));
+							A2($author$project$Effect$map, $author$project$Main$LoginMsg, signal)));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -11298,7 +11307,7 @@ var $author$project$Main$update = F2(
 						A2(
 							$author$project$Main$signalToCmd,
 							model,
-							A2($author$project$Signal$map, $author$project$Main$NotFoundMsg, signal)));
+							A2($author$project$Effect$map, $author$project$Main$NotFoundMsg, signal)));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -11318,7 +11327,7 @@ var $author$project$Main$update = F2(
 						A2(
 							$author$project$Main$signalToCmd,
 							model,
-							A2($author$project$Signal$map, $author$project$Main$DashboardMsg, signal)));
+							A2($author$project$Effect$map, $author$project$Main$DashboardMsg, signal)));
 				} else {
 					var m = _v0.a.a;
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -11326,16 +11335,45 @@ var $author$project$Main$update = F2(
 			default:
 				var result = _v0.a.a;
 				if (result.$ === 'Ok') {
-					var response = result.a;
-					return response.success ? _Utils_Tuple2(
-						model,
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{errorMsg: $elm$core$Maybe$Nothing}),
 						A2(
 							$elm$browser$Browser$Navigation$pushUrl,
 							model.ctx.key,
-							$author$project$Route$toString($author$project$Route$DashboardRoute))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+							$author$project$Route$toString($author$project$Route$DashboardRoute)));
 				} else {
 					var err = result.a;
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					if (err.$ === 'UnAuthorized') {
+						var res = err.a;
+						if (res.$ === 'Just') {
+							var errorMsg = res.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										errorMsg: $elm$core$Maybe$Just(errorMsg.errorMessage)
+									}),
+								$elm$core$Platform$Cmd$none);
+						} else {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var res = err.a;
+						if (res.$ === 'Just') {
+							var errorMsg = res.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										errorMsg: $elm$core$Maybe$Just(errorMsg.errorMessage)
+									}),
+								$elm$core$Platform$Cmd$none);
+						} else {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+					}
 				}
 		}
 	});
@@ -11466,7 +11504,7 @@ var $author$project$Pages$Login$view = F2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('grid gap-4 px-4')
+							$elm$html$Html$Attributes$class('grid gap-4 px-4 py-4')
 						]),
 					_List_fromArray(
 						[
@@ -11475,7 +11513,7 @@ var $author$project$Pages$Login$view = F2(
 							$elm$html$Html$div,
 							_List_fromArray(
 								[
-									$elm$html$Html$Attributes$class('grid gap-4 items-center')
+									$elm$html$Html$Attributes$class('grid gap-4 items-center justify-center')
 								]),
 							_List_fromArray(
 								[
@@ -11553,13 +11591,19 @@ var $author$project$Pages$Login$view = F2(
 															})
 														]))
 												])),
-											$author$project$Components$viewButtonPrimary(
-											{
-												event: $elm$html$Html$Events$onClick($author$project$Pages$Login$Login),
-												id: 'loginBtn',
-												name: 'loginbutton',
-												text: 'Login'
-											})
+											A2(
+											$elm$html$Html$div,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$author$project$Components$viewButtonPrimary(
+													{
+														event: $elm$html$Html$Events$onClick($author$project$Pages$Login$Login),
+														id: 'loginBtn',
+														name: 'loginbutton',
+														text: 'Login'
+													})
+												]))
 										]))
 								]))
 						]))
@@ -11590,15 +11634,37 @@ var $author$project$Main$view = function (model) {
 		case 'NotFound':
 			var m = _v0.a;
 			var pview = A2($author$project$Pages$NotFound$view, model.ctx, m);
-			return {
-				body: A2(
-					$elm$core$List$map,
-					function (a) {
-						return A2($elm$html$Html$map, $author$project$Main$NotFoundMsg, a);
-					},
-					pview.body),
-				title: pview.title
-			};
+			var body = A2(
+				$elm$core$List$map,
+				function (a) {
+					return A2($elm$html$Html$map, $author$project$Main$NotFoundMsg, a);
+				},
+				pview.body);
+			var bodt = A2(
+				$elm$core$List$append,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('grid gap-4')
+							]),
+						_List_fromArray(
+							[
+								function () {
+								var _v1 = model.errorMsg;
+								if (_v1.$ === 'Just') {
+									var val = _v1.a;
+									return $elm$html$Html$text(val);
+								} else {
+									return $elm$html$Html$text('');
+								}
+							}()
+							]))
+					]),
+				body);
+			return {body: bodt, title: pview.title};
 		case 'Dashboard':
 			var m = _v0.a;
 			var pview = A2($author$project$Pages$Dashboard$view, model.ctx, m);
@@ -11614,15 +11680,37 @@ var $author$project$Main$view = function (model) {
 		default:
 			var m = _v0.a;
 			var pview = A2($author$project$Pages$Login$view, model.ctx, m);
-			return {
-				body: A2(
-					$elm$core$List$map,
-					function (a) {
-						return A2($elm$html$Html$map, $author$project$Main$LoginMsg, a);
-					},
-					pview.body),
-				title: pview.title
-			};
+			var body = A2(
+				$elm$core$List$map,
+				function (a) {
+					return A2($elm$html$Html$map, $author$project$Main$LoginMsg, a);
+				},
+				pview.body);
+			var bodt = A2(
+				$elm$core$List$append,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('grid gap-4')
+							]),
+						_List_fromArray(
+							[
+								function () {
+								var _v2 = model.errorMsg;
+								if (_v2.$ === 'Just') {
+									var val = _v2.a;
+									return $elm$html$Html$text(val);
+								} else {
+									return $elm$html$Html$text('');
+								}
+							}()
+							]))
+					]),
+				body);
+			return {body: bodt, title: pview.title};
 	}
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
@@ -11637,4 +11725,4 @@ var $author$project$Main$main = $elm$browser$Browser$application(
 		view: $author$project$Main$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.LoginResponseData":{"args":[],"type":"{ success : Basics.Bool, response : String.String }"},"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"OnUrlChanged":["Url.Url"],"OnUrlRequested":["Browser.UrlRequest"],"NotFoundMsg":["Pages.NotFound.Msg"],"DashboardMsg":["Pages.Dashboard.Msg"],"LoginMsg":["Pages.Login.Msg"],"LoginResponse":["Result.Result Http.Error Main.LoginResponseData"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Pages.Dashboard.Msg":{"args":[],"tags":{"Login":[],"LoginResponse":[]}},"Pages.Login.Msg":{"args":[],"tags":{"Login":[],"PasswordChanged":["String.String"],"UsernameChanged":["String.String"]}},"Pages.NotFound.Msg":{"args":[],"tags":{"DoNothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.LoginResponseData":{"args":[],"type":"{ success : Basics.Bool, response : String.String }"},"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"Main.ErrorResponse":{"args":[],"type":"{ statusCode : Basics.Int, errorMessage : String.String }"}},"unions":{"Main.Msg":{"args":[],"tags":{"OnUrlChanged":["Url.Url"],"OnUrlRequested":["Browser.UrlRequest"],"NotFoundMsg":["Pages.NotFound.Msg"],"DashboardMsg":["Pages.Dashboard.Msg"],"LoginMsg":["Pages.Login.Msg"],"LoginResponse":["Result.Result Main.ServerStatusError Main.LoginResponseData"]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Pages.Dashboard.Msg":{"args":[],"tags":{"Login":[],"LoginResponse":[]}},"Pages.Login.Msg":{"args":[],"tags":{"Login":[],"PasswordChanged":["String.String"],"UsernameChanged":["String.String"]}},"Pages.NotFound.Msg":{"args":[],"tags":{"DoNothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Main.ServerStatusError":{"args":[],"tags":{"BadStatus":["Maybe.Maybe Main.ErrorResponse"],"UnAuthorized":["Maybe.Maybe Main.ErrorResponse"]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));

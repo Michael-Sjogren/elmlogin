@@ -3,7 +3,7 @@ import Components as Comps
 import Html
 import Browser
 import Context as Ctx
-import Signal exposing(Signal)
+import Effect exposing(Effect)
 type Msg = 
     Login
     | LoginResponse
@@ -14,18 +14,18 @@ type alias Model =
     }
 initModel : Model
 initModel = Model "" ""
-init : Ctx.Context -> (Model , Signal Msg)
+init : Ctx.Context -> (Model , Effect Msg)
 init ctx =
-    (initModel , Signal.none)
+    (initModel , Effect.none)
 
-update : Ctx.Context -> Msg -> Model ->  ( Model, Signal Msg )
+update : Ctx.Context -> Msg -> Model ->  ( Model, Effect Msg )
 update ctx msg model =
     case msg of
         Login ->
-             ( model, Signal.none )
+             ( model, Effect.none )
 
         LoginResponse ->
-             ( model, Signal.none )
+             ( model, Effect.none )
 
 view : Ctx.Context -> Model -> Browser.Document Msg
 view ctx model =
