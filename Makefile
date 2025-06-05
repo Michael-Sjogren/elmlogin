@@ -1,12 +1,11 @@
-watch_elm:
-	find ./app/src/**/*.elm | entr make elm_build
+build:css
+	elm make src/Main.elm --output static/main.min.js --debug # --optimize
+	elm-format --validate src/
+	elm-format src/*.elm --yes
+	#bun run uglifyjs  static/main.js --mangle --compress  > static/main.min.js
 
-elm_build:
-	cd app && tailwind -i css/input.css -o css/output.css
-	cd app && elm make src/Main.elm --output js/main.js --debug
+css:
+	tailwind -i static/input.css -o static/style.css --minify
 
-watch_css:
-	cd app && tailwind -i css/input.css -o css/output.css --watch
-
-watch_flask:
-	python3 backend/app.py 
+watch:
+	find src/**/*.elm | entr make build
