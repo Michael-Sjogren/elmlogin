@@ -7,25 +7,29 @@ import Html.Attributes as Attrs
 import Components exposing (viewTextInput)
 import Html.Events as Events
 import Http
-import Route exposing (Route)
+import Route
 import Context exposing (Context)
+import Effect exposing (ServerError(..))
+import DTO
+import Maybe exposing (withDefault)
 type alias Model =
     { username : String
     , password : String
+    , error : Maybe String
     }
 
 type Msg =
     OnPasswordChanged String
     | OnUsernameChanged String
     | OnLoginSubmit
-    | LoginResponseRecevied (Result Http.Error ())
+    | LoginResponseRecevied (Result Http.Error DTO.LoginResponse)
 
 init : Context -> (Model , Effect.Effect Msg)
 init ctx = 
     (initModel, Effect.none )
 
 initModel : Model
-initModel = { username = "", password = ""} 
+initModel = { username = "", password = "", error = Nothing} 
 
 update : Context -> Msg -> Model ->  ( Model, Effect.Effect Msg )
 update ctx msg model =
@@ -36,15 +40,29 @@ update ctx msg model =
         OnUsernameChanged usr ->
             ( {model | username = usr } , Effect.none )
         OnLoginSubmit ->
-            ( model  , Effect.Login { username = model.username, password = model.password } LoginResponseRecevied )
+            ( {model | error = Nothing}  , Effect.Login { username = model.username, password = model.password } LoginResponseRecevied )
         LoginResponseRecevied result ->
             case result of
                 Ok val ->
-                    (model, Effect.pushRoute ctx.key Route.HomeRoute )
+                    ({model | error = Nothing}, Effect.pushRoute ctx.key Route.HomeRoute )
                 Err err ->
-                    (model, Effect.none )
+                    case handleHttpError err of
+                        UnAuthorized ->
+                            ({model | error = Just "Invalid username or password."}, Effect.none )
+                        _ ->
+                            (model, Effect.none )
 
 
+handleHttpError : Http.Error -> Effect.ServerError
+handleHttpError err =
+    case err of
+        Http.BadStatus code ->
+            case code of
+                401 -> UnAuthorized 
+                _ -> InternalServerError
+        Http.BadBody a ->
+            InternalServerError
+        _ -> InternalServerError 
 
 view : Model -> Browser.Document Msg
 view model =
@@ -87,9 +105,11 @@ view model =
                     event = Events.onClick OnLoginSubmit, 
                     class = "cursor-pointer py-2 px-4 bg-green-400 text-black rounded-sm hover:bg-green-500" 
                 }
+                ,Html.div [ Attrs.class "text-red-400"] [
+                    Html.text <| withDefault "" model.error
+                ]
             ]
+        ]
        ]
-       ]
-
     }
     

@@ -5,12 +5,13 @@ import Http
 import Route
 import Browser.Navigation as Nav
 import Route exposing (Route)
-
+import Json.Decode exposing (bool)
 type Effect msg
     = None
     | Batch (List (Effect msg))
-    | Login DTO.LoginCredentials (Result Http.Error () -> msg)
+    | Login DTO.LoginCredentials ((Result Http.Error DTO.LoginResponse) -> msg)
     | PushRoute Nav.Key Route
+    | CheckLoginStatus ((Result Http.Error ()) -> msg)
 
 none : Effect msg
 none =
@@ -31,7 +32,8 @@ map inMsg effect =
         
         PushRoute key route ->
             PushRoute key route
-
+        CheckLoginStatus msg->
+            CheckLoginStatus (msg >> inMsg)
 
 
 pushRoute : Nav.Key -> Route.Route -> Effect msg
@@ -53,5 +55,28 @@ effectToCmd effect =
             Http.post
                 { url = "/login"
                 , body = Http.jsonBody <| DTO.loginCredentialsEncoder creds
-                , expect = Http.expectWhatever expectMsg
+                , expect = Http.expectJson expectMsg DTO.loginResponseDecoder
                 }
+        CheckLoginStatus msg->
+            Http.get {
+                url = "/home",
+                expect = Http.expectWhatever msg
+            }
+
+checkLoginStatus : ((Result Http.Error ()) -> msg) -> Cmd msg
+checkLoginStatus msg =
+    Http.get {
+        url = "/home",
+        expect = Http.expectWhatever msg
+    }
+
+handleCheckLoginStatus : (Result Http.Error ()) -> Bool
+handleCheckLoginStatus res =
+    case res of
+        Ok _ -> True
+        _ -> False
+
+type ServerError =
+    UnAuthorized
+    | BadRequest
+    | InternalServerError

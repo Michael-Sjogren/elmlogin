@@ -11,6 +11,9 @@ import Route
 import Url exposing (Url)
 import Context exposing (Context)
 import Effect
+import Url exposing (Protocol(..))
+import Http
+import Effect exposing (Effect(..))
 type PageModel
     = LoginPageModel Pages.Login.Model
     | HomePageModel Pages.Home.Model
@@ -21,6 +24,7 @@ type Msg
     | OnUrlChanged Url.Url
     | LoginPageMsg Pages.Login.Msg
     | HomePageMsg Pages.Home.Msg
+    | HandleLoginStatus (Result Http.Error ())
 
 
 type alias Model =
@@ -36,10 +40,13 @@ init _ url key =
     -- TODO: CHANGE VIEW TO PAGE
     let
         ctx : Context
-        ctx = { url = url, key = key }
+        ctx = { url = url, key = key, user = Nothing }
+    
+    
     in
     
-    ( { key = key, url = url, page = LoginPageModel Pages.Login.initModel, ctx = ctx }, Cmd.none )
+
+    ( { key = key, url = url, page = LoginPageModel Pages.Login.initModel, ctx = ctx },  Effect.checkLoginStatus HandleLoginStatus)
 
 
 subscriptions : Model -> Sub Msg
@@ -51,7 +58,7 @@ getPage : Route.Route -> Model -> ( Model, Cmd Msg )
 getPage route model =
     case route of
         Route.HomeRoute ->
-            ( { model | page = HomePageModel Pages.Home.initModel }, Cmd.none )
+            ( { model | page = HomePageModel Pages.Home.initModel }, Effect.checkLoginStatus HandleLoginStatus )
 
         Route.NotFoundRoute ->
             ( model, Cmd.none )
@@ -100,7 +107,12 @@ update msg model =
 
                 Browser.External url ->
                     ( model, Nav.load url )
+        HandleLoginStatus res ->
+            if Effect.handleCheckLoginStatus res then
+                (model, Nav.pushUrl model.key <| Route.toUrl Route.HomeRoute )
 
+            else
+                (model, Nav.pushUrl model.key <| Route.toUrl Route.LoginRoute )
 
 main : Program () Model Msg
 main =
