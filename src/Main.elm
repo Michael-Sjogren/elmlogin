@@ -2,18 +2,18 @@ module Main exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
+import Context exposing (Context)
 import Dict exposing (update)
+import Effect exposing (Effect(..))
 import Html
+import Http
 import Pages.Home
 import Pages.Login
 import Platform.Cmd as Cmd
 import Route
-import Url exposing (Url)
-import Context exposing (Context)
-import Effect
-import Url exposing (Protocol(..))
-import Http
-import Effect exposing (Effect(..))
+import Url exposing (Protocol(..), Url)
+
+
 type PageModel
     = LoginPageModel Pages.Login.Model
     | HomePageModel Pages.Home.Model
@@ -40,13 +40,10 @@ init _ url key =
     -- TODO: CHANGE VIEW TO PAGE
     let
         ctx : Context
-        ctx = { url = url, key = key, user = Nothing }
-    
-    
+        ctx =
+            { url = url, key = key, user = Nothing }
     in
-    
-
-    ( { key = key, url = url, page = LoginPageModel Pages.Login.initModel, ctx = ctx },  Effect.checkLoginStatus HandleLoginStatus)
+    ( { key = key, url = url, page = LoginPageModel Pages.Login.initModel, ctx = ctx }, Effect.checkLoginStatus HandleLoginStatus )
 
 
 subscriptions : Model -> Sub Msg
@@ -74,7 +71,9 @@ handlePageUpdate pmsg model =
             let
                 ( newModel, newCMd ) =
                     Pages.Login.update model.ctx lmsg lmodel
-                cmd = Effect.map LoginPageMsg newCMd
+
+                cmd =
+                    Effect.map LoginPageMsg newCMd
             in
             ( { model | page = LoginPageModel newModel }, Effect.effectToCmd cmd )
 
@@ -82,11 +81,14 @@ handlePageUpdate pmsg model =
             let
                 ( newModel, newCMd ) =
                     Pages.Home.update model.ctx lmsg lmodel
-                cmd = Effect.map HomePageMsg newCMd
-            in
-            ( { model | page = HomePageModel newModel },  Effect.effectToCmd cmd  )
 
-        (_,_) -> (model, Cmd.none)
+                cmd =
+                    Effect.map HomePageMsg newCMd
+            in
+            ( { model | page = HomePageModel newModel }, Effect.effectToCmd cmd )
+
+        ( _, _ ) ->
+            ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -94,6 +96,7 @@ update msg model =
     case msg of
         LoginPageMsg _ ->
             handlePageUpdate msg model
+
         HomePageMsg _ ->
             handlePageUpdate msg model
 
@@ -107,12 +110,14 @@ update msg model =
 
                 Browser.External url ->
                     ( model, Nav.load url )
+
         HandleLoginStatus res ->
             if Effect.handleCheckLoginStatus res then
-                (model, Nav.pushUrl model.key <| Route.toUrl Route.HomeRoute )
+                ( model, Nav.pushUrl model.key <| Route.toUrl Route.HomeRoute )
 
             else
-                (model, Nav.pushUrl model.key <| Route.toUrl Route.LoginRoute )
+                ( model, Nav.pushUrl model.key <| Route.toUrl Route.LoginRoute )
+
 
 main : Program () Model Msg
 main =
@@ -146,9 +151,3 @@ mapView pagemodel =
 view : Model -> Browser.Document Msg
 view model =
     mapView model.page
-
-
-
-
-
-

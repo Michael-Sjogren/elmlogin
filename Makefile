@@ -1,6 +1,5 @@
 build:css
 	elm make src/Main.elm --output static/main.min.js --debug # --optimize
-	elm-format --validate src/
 	elm-format src/*.elm --yes
 	#bun run uglifyjs  static/main.js --mangle --compress  > static/main.min.js
 

@@ -1,17 +1,19 @@
 module Effect exposing (..)
 
+import Browser.Navigation as Nav
 import DTO
 import Http
-import Route
-import Browser.Navigation as Nav
-import Route exposing (Route)
 import Json.Decode exposing (bool)
+import Route exposing (Route)
+
+
 type Effect msg
     = None
     | Batch (List (Effect msg))
-    | Login DTO.LoginCredentials ((Result Http.Error DTO.LoginResponse) -> msg)
+    | Login DTO.LoginCredentials (Result Http.Error DTO.LoginResponse -> msg)
     | PushRoute Nav.Key Route
-    | CheckLoginStatus ((Result Http.Error ()) -> msg)
+    | CheckLoginStatus (Result Http.Error () -> msg)
+
 
 none : Effect msg
 none =
@@ -29,16 +31,18 @@ map inMsg effect =
 
         Login creds msg ->
             Login creds (msg >> inMsg)
-        
+
         PushRoute key route ->
             PushRoute key route
-        CheckLoginStatus msg->
+
+        CheckLoginStatus msg ->
             CheckLoginStatus (msg >> inMsg)
 
 
 pushRoute : Nav.Key -> Route.Route -> Effect msg
 pushRoute key route =
     PushRoute key route
+
 
 effectToCmd : Effect msg -> Cmd msg
 effectToCmd effect =
@@ -48,35 +52,43 @@ effectToCmd effect =
 
         None ->
             Cmd.none
+
         PushRoute key route ->
             Nav.pushUrl key (Route.toUrl route)
-    
+
         Login creds expectMsg ->
             Http.post
                 { url = "/login"
                 , body = Http.jsonBody <| DTO.loginCredentialsEncoder creds
                 , expect = Http.expectJson expectMsg DTO.loginResponseDecoder
                 }
-        CheckLoginStatus msg->
-            Http.get {
-                url = "/home",
-                expect = Http.expectWhatever msg
-            }
 
-checkLoginStatus : ((Result Http.Error ()) -> msg) -> Cmd msg
+        CheckLoginStatus msg ->
+            Http.get
+                { url = "/home"
+                , expect = Http.expectWhatever msg
+                }
+
+
+checkLoginStatus : (Result Http.Error () -> msg) -> Cmd msg
 checkLoginStatus msg =
-    Http.get {
-        url = "/home",
-        expect = Http.expectWhatever msg
-    }
+    Http.get
+        { url = "/home"
+        , expect = Http.expectWhatever msg
+        }
 
-handleCheckLoginStatus : (Result Http.Error ()) -> Bool
+
+handleCheckLoginStatus : Result Http.Error () -> Bool
 handleCheckLoginStatus res =
     case res of
-        Ok _ -> True
-        _ -> False
+        Ok _ ->
+            True
 
-type ServerError =
-    UnAuthorized
+        _ ->
+            False
+
+
+type ServerError
+    = UnAuthorized
     | BadRequest
     | InternalServerError
